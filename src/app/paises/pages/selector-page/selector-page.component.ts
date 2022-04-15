@@ -13,11 +13,13 @@ export class SelectorPageComponent implements OnInit {
 
   miFormulario: FormGroup = this.fb.group({
     region: [ '', Validators.required ],
-    pais: [ '', Validators.required ]
+    pais: [ '', Validators.required ],
+    frontera: [ '', Validators.required ]
   });
 
   regiones: string[] = [];
   paises: PaisSmall[] = [];
+  fronteras: string [] = [];
 
   constructor( 
     private fb: FormBuilder,
@@ -28,6 +30,7 @@ export class SelectorPageComponent implements OnInit {
 
     this.regiones = this.paisesService.regiones;
 
+    // Otra forma de hacer lo de la dependencia del selector 2 sin rxjs
     // this.miFormulario.get('region')?.valueChanges.subscribe( region => {
     //   console.log(region);
 
@@ -39,6 +42,7 @@ export class SelectorPageComponent implements OnInit {
 
     // });
 
+    // Cuando cambie la region
     this.miFormulario.get('region')?.valueChanges
     .pipe(
       tap( (_) => {
@@ -49,6 +53,19 @@ export class SelectorPageComponent implements OnInit {
     .subscribe( paises => {
       this.paises = paises;
       console.log(paises);
+    } );
+
+    // Cuando cambie el pais
+    this.miFormulario.get('pais')?.valueChanges
+    .pipe(
+      tap( () => {
+        this.fronteras = [];
+        this.miFormulario.get('frontera')?.reset();
+      } ),
+      switchMap( codigo => this.paisesService.getPaisPorCodigo( codigo) )
+    )
+    .subscribe( pais => {
+      this.fronteras = pais?.borders || [];
     } );
 
   }
