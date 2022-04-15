@@ -11,10 +11,12 @@ import { PaisesService } from '../../services/paises.service';
 })
 export class SelectorPageComponent implements OnInit {
 
+  cargando: boolean = false;
+
   miFormulario: FormGroup = this.fb.group({
     region: [ '', Validators.required ],
     pais: [ '', Validators.required ],
-    frontera: [ '', Validators.required ]
+    frontera: [ '' /*{value: '', disabled: true}*/, Validators.required ]
   });
 
   regiones: string[] = [];
@@ -47,12 +49,14 @@ export class SelectorPageComponent implements OnInit {
     .pipe(
       tap( (_) => {
         this.miFormulario.get('pais')?.reset();
+        this.cargando = true;
+        // this.miFormulario.get('frontera')?.disable();
       } ),
       switchMap( region => this.paisesService.getPaisesPorRegion( region ) )
     )
     .subscribe( paises => {
       this.paises = paises;
-      console.log(paises);
+      this.cargando = false;
     } );
 
     // Cuando cambie el pais
@@ -61,11 +65,14 @@ export class SelectorPageComponent implements OnInit {
       tap( () => {
         this.fronteras = [];
         this.miFormulario.get('frontera')?.reset();
+        this.cargando = true;
+        // this.miFormulario.get('frontera')?.enable();
       } ),
       switchMap( codigo => this.paisesService.getPaisPorCodigo( codigo) )
     )
     .subscribe( pais => {
       this.fronteras = pais?.borders || [];
+      this.cargando = false;
     } );
 
   }
