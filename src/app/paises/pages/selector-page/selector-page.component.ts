@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { switchMap, tap } from 'rxjs';
+import { of, switchMap, tap } from 'rxjs';
 import { PaisSmall } from '../../interfaces/paises.interface';
 import { PaisesService } from '../../services/paises.service';
 
@@ -70,7 +70,10 @@ export class SelectorPageComponent implements OnInit {
         // this.miFormulario.get('frontera')?.enable();
       } ),
       switchMap( codigo => this.paisesService.getPaisPorCodigo( codigo) ),
-      switchMap( pais => this.paisesService.getPaisesPorCodigos( pais?.borders! ))
+      switchMap( pais => {
+        if(!pais?.borders) return of([]);
+        return this.paisesService.getPaisesPorCodigos( pais?.borders! ) || []
+      })
     )
     .subscribe( paises => {
       this.fronteras = paises;
